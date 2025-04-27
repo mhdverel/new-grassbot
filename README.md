@@ -4,6 +4,12 @@
 
 # JOIN GRASS : [https://app.grass.io](https://app.grass.io/register/?referralCode=14euVrmXslgPwPI)
 
+# VIDEO TUTORIAL : https://youtu.be/EW8hlfqVPUo
+
+# TELEGRAM CHANNEL : [SHARE IT HUB](https://t.me/SHAREITHUB_COM)
+
+# YOUTUBE CHANNEL : [SHARE IT HUB](https://www.youtube.com/@SHAREITHUB_COM?sub_confirmation=1)
+
 # TUTORIAL :
 
 Install :
