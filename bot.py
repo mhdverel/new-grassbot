@@ -57,6 +57,23 @@ PING_INTERVAL = 30
 CHECKIN_INTERVAL = 300
 DIRECTOR_SERVER = "https://director.getgrass.io"
 
+# Fungsi untuk mendapatkan IP yang sedang digunakan
+async def get_current_ip(proxy_url: str):
+    try:
+        async with ClientSession() as session:
+            async with session.get("http://ipinfo.io/ip", proxy=proxy_url) as response:
+                if response.status == 200:
+                    ip = await response.text()
+                    logger.info(f"📡 IP yang digunakan: {ip.strip()}")
+                    return ip.strip()
+                else:
+                    logger.error(f"❌ Gagal mendapatkan IP, status {response.status}")
+                    return None
+    except Exception as e:
+        logger.error(f"Error saat mengambil IP: {e}")
+        return None
+
+# Fungsi untuk mendapatkan endpoint WebSocket
 async def get_ws_endpoints(device_id: str, user_id: str, proxy_url: str):
     HEADERS["User-Agent"] = ua.random
     url = f"{DIRECTOR_SERVER}/checkin"
@@ -104,6 +121,11 @@ class WebSocketClient:
 
     async def connect(self) -> None:
         logger.info(f"🖥️ Device {self.device_id} ➡️ Proxy Connected")
+        # Menampilkan IP yang sedang digunakan
+        ip = await get_current_ip(self.proxy_url)
+        if ip:
+            logger.info(f"🖥️ Device {self.device_id} menggunakan IP {ip}")
+
         while True:
             try:
                 endpoints, token = await get_ws_endpoints(self.device_id, self.user_id, self.proxy_url)
