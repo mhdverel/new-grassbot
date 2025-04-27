@@ -230,10 +230,10 @@ def start_client(device_id: str, user_id: str, proxy_url: str):
 def main():
     setup_logger()
 
-    threads_count = int(input("🔢 Jumlah thread per USER (max 4): "))
+    threads_count = int(input("🔢 Jumlah thread per USER (max 10): "))
 
-    if threads_count > 4:
-        print(Fore.RED + "❌ Jumlah thread maksimal adalah 4.")
+    if threads_count > 10:
+        print(Fore.RED + "❌ Jumlah thread maksimal adalah 10.")
         return
 
     logger.info(f"🚀 Menjalankan {threads_count} threads untuk tiap USER")
