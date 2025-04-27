@@ -1,0 +1,6 @@
+aiohttp
+fake_useragent
+loguru
+colorama
+websockets
+shareithub
