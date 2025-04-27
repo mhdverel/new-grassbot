@@ -19,6 +19,7 @@ sudo apt install python3-pip -y
 sudo apt install python3-venv -y
 sudo apt install git
 sudo apt install nano
+sudo apt install screen
 ```
 Git clone bot :
 ```
