@@ -14,6 +14,10 @@ sudo apt install python3-venv -y
 sudo apt install git
 sudo apt install nano
 ```
+Git clone bot :
+```
+git clone https://github.com/shareithub/new-grassbot.git
+```
 
 Go to folder bot & install modules:
 ```
