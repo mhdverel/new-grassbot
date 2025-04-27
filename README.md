@@ -36,3 +36,7 @@ Run bot :
 ```
 python3 bot.py
 ```
+
+
+## NOTE :
+# Jika ingin tetap berjalan di VPS . jangan lupa gunakan Screen
