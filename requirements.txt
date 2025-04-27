@@ -4,3 +4,4 @@ loguru
 colorama
 websockets
 shareithub
+websockets_proxy
