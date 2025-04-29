@@ -17,11 +17,11 @@ from websockets_proxy import Proxy, proxy_connect
 init(autoreset=True)
 
 CONFIG_FILE = "config.json"
+
+# [MODIFIKASI MULTI ACCOUNT] Load semua akun sebagai list
 try:
     with open(CONFIG_FILE, "r") as cf:
-        _cfg = json.load(cf)
-        USER_IDS = _cfg.get("user_ids", [])
-        BASE_PROXY = _cfg.get("base_proxy")
+        ACCOUNTS = json.load(cf)
 except Exception as e:
     print(Fore.RED + f"❌ Gagal load {CONFIG_FILE}: {e}")
     exit(1)
@@ -29,10 +29,10 @@ except Exception as e:
 def setup_logger():
     logger.remove()
     logger.add("bot.log",
-               format=" <level>{level}</level> | <cyan>{message}</cyan>",
+               format="<cyan>{time:YYYY-MM-DD HH:mm:ss}</cyan> | <level>{level}</level> | <cyan>{message}</cyan>",
                level="INFO", rotation="1 day")
     logger.add(lambda msg: print(msg, end=""),
-               format=" <level>{level}</level> | <cyan>{message}</cyan>",
+               format="<cyan>{time:HH:mm:ss}</cyan> | <level>{level}</level> | <cyan>{message}</cyan>",
                level="INFO", colorize=True)
 
 ua = UserAgent()
@@ -57,23 +57,18 @@ PING_INTERVAL = 30
 CHECKIN_INTERVAL = 300
 DIRECTOR_SERVER = "https://director.getgrass.io"
 
-# Fungsi untuk mendapatkan IP yang sedang digunakan
 async def get_current_ip(proxy_url: str):
     try:
         async with ClientSession() as session:
             async with session.get("http://ipinfo.io/ip", proxy=proxy_url) as response:
                 if response.status == 200:
                     ip = await response.text()
-                    logger.info(f"📡 IP yang digunakan: {ip.strip()}")
                     return ip.strip()
                 else:
-                    logger.error(f"❌ Gagal mendapatkan IP, status {response.status}")
                     return None
-    except Exception as e:
-        logger.error(f"Error saat mengambil IP: {e}")
+    except:
         return None
 
-# Fungsi untuk mendapatkan endpoint WebSocket
 async def get_ws_endpoints(device_id: str, user_id: str, proxy_url: str):
     HEADERS["User-Agent"] = ua.random
     url = f"{DIRECTOR_SERVER}/checkin"
@@ -88,27 +83,22 @@ async def get_ws_endpoints(device_id: str, user_id: str, proxy_url: str):
     connector = TCPConnector(ssl=False)
     async with ClientSession(connector=connector) as session:
         attempt = 0
-        while attempt < 5:  
+        while attempt < 5:
             try:
                 async with session.post(url, json=payload, headers=HEADERS, proxy=proxy_url) as resp:
-                    if resp.status == 429:  
-                        logger.warning(f"⚠️ Rate Limiting Detected! Attempt {attempt + 1}")
-                        wait_time = random.uniform(5, 15)  
-                        logger.info(f"⏳ Menunggu {wait_time:.2f} detik sebelum mencoba lagi...")
+                    if resp.status == 429:
+                        wait_time = random.uniform(5, 15)
                         time.sleep(wait_time)
                         attempt += 1
-                        continue  
+                        continue
                     elif resp.status != 201:
-                        logger.error(f"Check-in gagal (status {resp.status})")
                         return [], ""
                     data = await resp.json(content_type=None)
                     dests = [f"wss://{d}" for d in data.get("destinations", [])]
                     token = data.get("token", "")
                     return dests, token
-            except Exception as e:
-                logger.error(f"Check-in error: {e}")
+            except:
                 return [], ""
-        logger.error("❌ Gagal melakukan check-in setelah 5 percakapan percobaan")
         return [], ""
 
 class WebSocketClient:
@@ -116,15 +106,15 @@ class WebSocketClient:
         self.device_id = device_id
         self.user_id = user_id
         self.proxy_url = proxy_url
-        self.base_proxy = BASE_PROXY
+        self.base_proxy = proxy_url
         self.uri = None
+        self.prefix = f"[UID:{self.user_id}]"
 
     async def connect(self) -> None:
-        logger.info(f"🖥️ Device {self.device_id} ➡️ Proxy Connected")
-        # Menampilkan IP yang sedang digunakan
+        logger.info(f"{self.prefix} 🛰️ Device {self.device_id} Connected")
         ip = await get_current_ip(self.proxy_url)
         if ip:
-            logger.info(f"🖥️ Device {self.device_id} menggunakan IP {ip}")
+            logger.info(f"{self.prefix} 📡 IP: {ip}")
 
         while True:
             try:
@@ -149,11 +139,11 @@ class WebSocketClient:
                     checkin_task.cancel()
 
             except Exception as e:
-                logger.error(f"🚫 Koneksi error: {e}")
+                logger.error(f"{self.prefix} 🚫 Koneksi error: {e}")
                 if self.proxy_url != self.base_proxy:
-                    logger.info("🔄 Fallback ke BASE_PROXY")
+                    logger.info(f"{self.prefix} 🔄 Fallback ke BASE_PROXY")
                 else:
-                    logger.info("❌ BASE_PROXY gagal, retry dalam 5 detik")
+                    logger.info(f"{self.prefix} ❌ BASE_PROXY gagal, retry dalam 5 detik")
                     await asyncio.sleep(5)
                 self.proxy_url = self.base_proxy
 
@@ -167,10 +157,10 @@ class WebSocketClient:
                     "data": {}
                 }
                 await ws.send(json.dumps(msg))
-                logger.info(f"💬 PING dikirim: {msg['id']}")
+                logger.info(f"{self.prefix} 💬 PING dikirim (id: {msg['id']})")
                 await asyncio.sleep(PING_INTERVAL)
             except Exception as e:
-                logger.error(f"Ping error: {e}")
+                logger.error(f"{self.prefix} Ping error: {e}")
                 break
 
     async def _periodic_checkin(self):
@@ -189,11 +179,11 @@ class WebSocketClient:
             msg = json.loads(raw)
             action = msg.get("action")
             if action == "PONG":
-                logger.info(f"💬 PONG diterima: {msg['id']}")
+                logger.info(f"{self.prefix} 💬 PONG diterima (id: {msg['id']})")
             elif action in handlers:
                 await handlers[action](ws, msg)
             else:
-                logger.error(f"Tidak ada handler untuk action: {action}")
+                logger.error(f"{self.prefix} Tidak ada handler untuk action: {action}")
 
     async def _handle_auth(self, ws, msg):
         resp = {
@@ -229,7 +219,7 @@ class WebSocketClient:
                     res_headers = dict(r.headers)
                     res_bytes = await r.read()
         except Exception as e:
-            logger.error(f"HTTP_REQUEST error: {e}")
+            logger.error(f"{self.prefix} HTTP_REQUEST error: {e}")
             raise
         b64 = base64.b64encode(res_bytes).decode()
         result = {
@@ -261,18 +251,21 @@ def main():
     logger.info(f"🚀 Menjalankan {threads_count} threads untuk tiap USER")
 
     threads = []
-    for uid in USER_IDS:
-        for _ in range(threads_count):
-            dev_id = str(uuid.uuid4())
-            proxy_url = BASE_PROXY
-            t = threading.Thread(
-                target=start_client,
-                args=(dev_id, uid, proxy_url),
-                daemon=True
-            )
-            t.start()
-            threads.append(t)
-            time.sleep(0.1)
+    for account in ACCOUNTS:
+        user_ids = account.get("user_ids", [])
+        base_proxy = account.get("base_proxy")
+
+        for uid in user_ids:
+            for _ in range(threads_count):
+                dev_id = str(uuid.uuid4())
+                t = threading.Thread(
+                    target=start_client,
+                    args=(dev_id, uid, base_proxy),
+                    daemon=True
+                )
+                t.start()
+                threads.append(t)
+                time.sleep(0.1)
 
     try:
         while True:
