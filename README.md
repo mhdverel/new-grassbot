@@ -1,49 +1,87 @@
-# NEW BOT GRASS WITH BASE PROXY - MULTI ACCOUNTS & MULTI THREADS
+# 🌿 Multi-Account Grass Bot
 
-# BUY PROXY : [https://center.cherryproxy.com](https://center.cherryproxy.com/Login/Register?invite=509287c1)
+Grass Bot ini dikembangkan untuk **multi akun paralel** menggunakan **WebSocket** dan **proxy**.  
+Bot ini otomatis melakukan **PING**/**PONG** ke server Grass, menjaga koneksi tetap aktif untuk banyak akun sekaligus.
 
-# JOIN GRASS : [https://app.grass.io](https://app.grass.io/register/?referralCode=14euVrmXslgPwPI)
+---
 
-# VIDEO TUTORIAL : https://youtu.be/EW8hlfqVPUo
+## ✨ Fitur Utama
+- 🔥 **Multi-account**: Support banyak akun sekaligus (konfigurasi di `config.json`).
+- 🚀 **Multi-threaded**: Masing-masing akun berjalan paralel.
+- 🛡️ **Proxy support**: Setiap akun bisa menggunakan proxy masing-masing.
+- 📋 **Logging lengkap**: Log `PING`, `PONG`, error, koneksi, semua ditandai `user_id`.
+- 🔒 **Auto-reconnect**: Koneksi bot akan retry otomatis jika disconnect.
 
-# TELEGRAM CHANNEL : [SHARE IT HUB](https://t.me/SHAREITHUB_COM)
+---
 
-# YOUTUBE CHANNEL : [SHARE IT HUB](https://www.youtube.com/@SHAREITHUB_COM?sub_confirmation=1)
+## 📦 Instalasi
 
-# TUTORIAL :
+1. **Clone repository**:
+   ```bash
+   git clone https://github.com/username/grassbot-multi.git
+   cd grassbot-multi
+   ```
 
-Install :
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Buat file `config.json`** (contoh format):
+   ```json
+   [
+     {
+       "user_ids": ["your_user_id_1"],
+       "base_proxy": "http://your-proxy-1:port"
+     },
+     {
+       "user_ids": ["your_user_id_2"],
+       "base_proxy": "http://your-proxy-2:port"
+     }
+   ]
+   ```
+
+4. **Jalankan bot**:
+   ```bash
+   python bot.py
+   ```
+
+---
+
+## 🛠️ Konfigurasi
+- **config.json** harus berisi list akun, tiap akun bisa satu atau lebih `user_ids`.
+- **base_proxy** harus format `http://user:pass@proxyserver:port` atau bisa `http://ip:port` biasa.
+
+---
+
+## 📋 Cara Kerja
+- Saat bot jalan, Anda akan diminta input **jumlah thread** per akun.
+- Setiap akun akan dijalankan dalam beberapa thread sesuai input Anda (maksimal 10).
+- Bot akan:
+  - Melakukan check-in ke server Grass.
+  - Membuka koneksi WebSocket melalui proxy.
+  - Otomatis mengirim **PING** dan menerima **PONG**.
+  - Jika koneksi error, bot akan otomatis retry.
+
+---
+
+## 🔥 Logging
+Semua aktivitas bot akan dicatat ke:
+- `bot.log` (file log harian)
+- Terminal console real-time
+
+Format log:
 ```
-sudo apt install python3 -y
-sudo apt install python3-pip -y
-sudo apt install python3-venv -y
-sudo apt install git
-sudo apt install nano
-sudo apt install screen
-```
-Git clone bot :
-```
-git clone https://github.com/shareithub/new-grassbot.git
+[HH:MM:SS] | INFO | [UID:user_id] 💬 PING dikirim (id: xxx)
+[HH:MM:SS] | INFO | [UID:user_id] 💬 PONG diterima (id: yyy)
 ```
 
-Go to folder bot & install modules:
-```
-cd new-grassbot
-python3 -m venv shareithub
-. shareithub/bin/activate
-pip install -r requirements.txt
-```
+---
 
-Edit file config.json :
-```
-nano config.json
-```
+## 📜 License
+This project is licensed under the MIT License.
 
-Run bot :
-```
-python3 bot.py
-```
+---
 
+**Made with ❤️ for Grass.io community.**
 
-## NOTE :
-# Jika ingin tetap berjalan di VPS . jangan lupa gunakan Screen
